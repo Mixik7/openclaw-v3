@@ -35,9 +35,10 @@ ENV NODE_ENV=production
 # Allow non-root user to write temp files during runtime/tests.
 RUN chown -R node:node /app
 
-# Create .openclaw directory and copy config
-RUN mkdir -p /home/node/.openclaw && \
+# Create .openclaw directory, copy config and workspace files
+RUN mkdir -p /home/node/.openclaw/workspace && \
     cp /app/openclaw.json /home/node/.openclaw/openclaw.json && \
+    if [ -d /app/workspace ]; then cp -r /app/workspace/* /home/node/.openclaw/workspace/; fi && \
     chown -R node:node /home/node/.openclaw
 
 # Security hardening: Run as non-root user
