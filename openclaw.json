@@ -36,6 +36,11 @@
       }
     }
   },
+  "hooks": {
+    "enabled": true,
+    "path": "/hooks",
+    "token": "${OPENCLAW_HOOKS_TOKEN}"
+  },
   "plugins": {
     "entries": {
       "telegram": {
