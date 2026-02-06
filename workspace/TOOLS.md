@@ -7,27 +7,48 @@ summary: "Local infrastructure notes"
 
 - **URL:** https://n8n-production-fc90.up.railway.app
 - **API Auth:** Header `X-N8N-API-KEY` with JWT token from `$N8N_API_KEY`
-- **Workflows:** 30 total (13 active production + 8 inactive _v3 fixes + others)
+- **Workflows:** 35+ total (18 active production + 8 inactive _v3 fixes + others)
 
 ### Key Workflows
-| Name | Purpose | Status |
-|------|---------|--------|
-| 1_Router_Core | Telegram command routing | Active |
-| 2_Content_Scheduler | Cron video publishing | Active |
-| 2a_Channel_Worker_Acc01 | YouTube upload (Karinaranevskay) | Active |
-| 2a_Channel_Worker_Acc02 | YouTube upload (singularity.shift.help) | Active |
-| 3_Status_Service | Channel monitoring | Active |
-| 5_AI_Chat | AI responses | Active |
-| 6_Suno_Music | Music generation | Active |
-| 7_Event_Logger | Logging to Google Sheet | Active |
+| Name | ID | Purpose | Status |
+|------|----|---------|--------|
+| 1_Router_Core | 7h11iwrB... | Telegram command routing | Active |
+| 2_Content_Scheduler_v2 | y4gGFSeA... | Cron video publishing (multi-platform) | Active |
+| 2a_Channel_Worker_Acc01 | By9t27uH... | YouTube upload (Karinaranevskay) | Active |
+| 2a_Channel_Worker_Acc02 | OATVTrrq... | YouTube upload (singularity.shift.help) | Active |
+| 2a_Channel_Worker_Acc03 | 14S6Qdk1... | YouTube upload (mi.xi.million) | Active |
+| 3_Status_Service | 07HBejiv... | Channel monitoring | Active |
+| 5_AI_Chat | xSvhQX0k... | AI responses | Active |
+| 6_Suno_Music | wn4VgYjB... | Music generation | Active |
+| 7_Event_Logger | KZwQpHP6... | Logging to Google Sheet | Active |
+| 12_OpenClaw_Bridge | mXnfHX25... | n8n→OpenClaw AI notifications | Active |
+| **8_Platform_Router** | sFRx11bM... | Multi-platform routing (YT/TT/VK) | **Active** |
+| **9a_TikTok_Worker** | XgE9q857... | TikTok video publishing | **Active** |
+| **9b_VK_Worker** | jn2xPkYw... | VK video publishing | **Active** |
+| **10_TikTok_Token_Refresh** | 4xfXnDMi... | Auto-refresh TikTok OAuth tokens (cron 20h) | **Active** |
 
-### v3 Workflows (fixed, inactive — testing)
+### Multi-Platform Architecture (Phase 2)
+```
+Scheduler → [Multi-Platform?]
+  ├─ No (youtube only) → Роутинг по credGroup → Worker Acc01/02/03
+  └─ Yes (has platforms field) → 8_Platform_Router
+       ├─ youtube → Route to Acc01/02/03 by credGroup
+       ├─ tiktok → 9a_TikTok_Worker
+       ├─ vk → 9b_VK_Worker
+       └─ unknown → Log
+```
+
+### v3 Workflows (fixed, inactive — backup)
 All have `_v3` suffix. Same as above but with bug fixes applied.
 
 ## Google Sheets (Source of Truth)
 
 - **Sheet ID:** 1lFwmozG-ci94UFV_kmzVVyHKz_y4FUfCAj4p1KnBSkw
-- **Content:** Channel config (ch_001, ch_002, ch_003), credentials mapping
+- **Tabs:**
+  - **Channels** — Channel config (ch_001-003), folderId, archiveId, credGroup, platform, `platforms` (comma-separated for multi-platform)
+  - **PlatformCredentials** — Per-platform credentials (credGroup + platform → accessToken, refreshToken, tokenExpiry, groupId, status)
+  - **EventLog** — Publication events log
+  - **Metrics** — Performance metrics
 
 ## Google Drive
 
