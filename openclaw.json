@@ -1,0 +1,21 @@
+{
+  "gateway": {
+    "mode": "local",
+    "bind": "lan",
+    "port": 18789,
+    "controlUi": {
+      "enabled": true,
+      "allowInsecureAuth": true
+    },
+    "auth": {
+      "mode": "token",
+      "token": "26971d5d89c94d544fb43409257ddd2c1a09d369efdab4b3a0e93a8b35d286eb"
+    },
+    "trustedProxies": ["0.0.0.0/0"]
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "/home/node/.openclaw/workspace"
+    }
+  }
+}
