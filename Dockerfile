@@ -41,17 +41,15 @@ RUN mkdir -p /home/node/.openclaw/workspace && \
     if [ -d /app/workspace ]; then cp -r /app/workspace/* /home/node/.openclaw/workspace/; fi && \
     chown -R node:node /home/node/.openclaw
 
-# Security hardening: Run as non-root user
-# The node:22-bookworm image includes a 'node' user (uid 1000)
-# This reduces the attack surface by preventing container escape via root privileges
-USER node
+# Pre-create /data for Railway persistent volume mount
+RUN mkdir -p /data && chown -R node:node /data
 
-# Start gateway server with default config.
-# Binds to loopback (127.0.0.1) by default for security.
-#
-# For container platforms requiring external health checks:
-#   1. Set OPENCLAW_GATEWAY_TOKEN or OPENCLAW_GATEWAY_PASSWORD env var
-#   2. Override CMD: ["node","dist/index.js","gateway","--allow-unconfigured","--bind","lan"]
-CMD ["node", "dist/index.js", "gateway", "--allow-unconfigured", "--bind", "lan"]
+# Install gosu for secure user switching at runtime
+RUN apt-get update && apt-get install -y --no-install-recommends gosu && \
+    rm -rf /var/lib/apt/lists/*
+
+# Start gateway: fix volume permissions then switch to node user
+# Railway mounts volumes as root after container build, so we fix perms at runtime
+CMD ["sh", "-c", "chown -R node:node /data 2>/dev/null; exec gosu node node dist/index.js gateway --allow-unconfigured --bind lan"]
 
 
