@@ -65,8 +65,11 @@ apps/ios/*.mobileprovision
 # Local untracked files
 .local/
 .vscode/
-IDENTITY.md
-USER.md
+# IDENTITY.md and USER.md in workspace are personal, but templates are needed for build
+/IDENTITY.md
+/USER.md
+!docs/reference/templates/IDENTITY.md
+!docs/reference/templates/USER.md
 .tgz
 
 # local tooling
