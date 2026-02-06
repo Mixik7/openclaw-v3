@@ -28,6 +28,13 @@
       "streamMode": "partial"
     }
   },
+  "skills": {
+    "entries": {
+      "n8n-api": {
+        "enabled": true
+      }
+    }
+  },
   "plugins": {
     "entries": {
       "telegram": {
