@@ -8,8 +8,7 @@
       "allowInsecureAuth": true
     },
     "auth": {
-      "mode": "token",
-      "token": "26971d5d89c94d544fb43409257ddd2c1a09d369efdab4b3a0e93a8b35d286eb"
+      "mode": "token"
     },
     "trustedProxies": ["0.0.0.0/0"]
   },
@@ -25,7 +24,6 @@
     "telegram": {
       "enabled": true,
       "dmPolicy": "pairing",
-      "botToken": "8583969839:AAFp21wumOtCzvCYV7tsGrkurNPAeQzbTrU",
       "groupPolicy": "allowlist",
       "streamMode": "partial"
     }
