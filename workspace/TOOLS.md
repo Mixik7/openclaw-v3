@@ -55,12 +55,44 @@ All have `_v3` suffix. Same as above but with bug fixes applied.
 - Videos stored in channel folders
 - After publishing, videos moved to archive subfolder
 
+## Agent Ecosystem (Symbiosis)
+
+Four AI services working together. You (IDEA) can delegate to any agent.
+
+| Agent | Service | URL | Capabilities |
+|-------|---------|-----|-------------|
+| **IDEA** (you) | openclaw-v3 | :18789 | Messaging, content strategy, user interaction |
+| **TG-Kombain** | tg-kombain | :8502 | Telegram automation, 33 MCP tools, 100+ API endpoints |
+| **Moltis Atlas** | moltis | :8080 | Deep research, analysis, reasoning, Rust sandbox |
+| **N8N** | n8n | :5678 | Workflow orchestration, 27+ workflows, event bus |
+
+### Agent Dispatch (via N8N WF 26)
+```
+POST $N8N_BASE_URL/webhook/agent-dispatch
+Body: {"from_agent":"openclaw","to_agent":"moltis|tg-kombain|n8n","action":"delegate","payload":{"message":"..."}}
+```
+
+### TG-Kombain Direct API
+Use skill `tg-kombain` for direct access:
+- Stats: `GET $TG_KOMBAIN_API_URL/api/n8n/stats`
+- Parse: `POST $TG_KOMBAIN_API_URL/api/n8n/parse`
+- Agent tasks: `GET $TG_KOMBAIN_API_URL/api/agent/tasks`
+
+### Key Orchestration Workflows
+| WF | ID | Purpose |
+|----|----|---------|
+| 09. OpenClaw Bridge | mXnfHX25... | Bidirectional n8n <-> OpenClaw |
+| 26. Agent Dispatcher | uNUbgpRc... | Route tasks to any agent |
+| 27. Agent Result Collector | fWiswnHY... | Collect and forward results |
+
 ## Railway Projects
 
 | Project | Service | Purpose |
 |---------|---------|---------|
 | N8N | n8n | Workflow automation (DON'T TOUCH) |
 | openclaw-v3 | openclaw-v3 | This bot (IDEA) |
+| tg-kombain | tg-kombain | Telegram automation platform |
+| moltis | moltis | Deep research AI agent |
 | OPENCLAW-2 | openclaw | Old bot (backup, don't touch) |
 
 ## Telegram Bots
@@ -68,5 +100,6 @@ All have `_v3` suffix. Same as above but with bug fixes applied.
 | Bot | Purpose |
 |-----|---------|
 | @IDEA_TOP_BOT | This bot (Content Factory AI) |
+| @MOLTIS_TOP_BOT | Moltis Atlas (deep research) |
 | @Open_Claw_7BOT | Old bot (backup) |
 | @My_Assistant_content2_bot | n8n Router (fallback commands) |

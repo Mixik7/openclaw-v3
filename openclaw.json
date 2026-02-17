@@ -33,13 +33,28 @@
     "entries": {
       "n8n-api": {
         "enabled": true
+      },
+      "tg-kombain": {
+        "enabled": true
+      },
+      "agent-delegate": {
+        "enabled": true
       }
     }
   },
   "hooks": {
     "enabled": true,
     "path": "/hooks",
-    "token": "${OPENCLAW_HOOKS_TOKEN}"
+    "token": "${OPENCLAW_HOOKS_TOKEN}",
+    "mappings": [
+      {
+        "id": "agent-result",
+        "match": { "path": "/agent" },
+        "action": "agent",
+        "sessionKey": "agent:default",
+        "message": "Agent result received"
+      }
+    ]
   },
   "plugins": {
     "entries": {
