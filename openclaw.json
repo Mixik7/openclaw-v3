@@ -52,7 +52,7 @@
         "match": { "path": "/agent" },
         "action": "agent",
         "sessionKey": "agent:default",
-        "message": "Agent result received"
+        "messageTemplate": "Agent result received"
       }
     ]
   },
