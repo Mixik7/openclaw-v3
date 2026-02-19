@@ -64,7 +64,6 @@
   },
   "messages": {
     "tts": {
-      "enabled": true,
       "auto": "inbound",
       "provider": "edge",
       "edge": {
