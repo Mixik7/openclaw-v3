@@ -1,13 +1,13 @@
 ---
 name: telegram-voice
-description: Generate Telegram voice bubbles from text using Edge-TTS + ffmpeg. Produces OGG/Opus files guaranteed to show as round voice bubbles in Telegram. Use when responding to voice messages or when user requests voice output. Requires ffmpeg in PATH.
+description: Generate Telegram voice bubbles from text using Node edge-tts + ffmpeg. Produces OGG/Opus files that show as round voice bubbles in Telegram. MUST use when responding to voice messages. Requires ffmpeg in PATH.
 metadata:
   {
     "openclaw":
       {
         "emoji": "🎙️",
         "os": ["linux"],
-        "requires": { "bins": ["ffmpeg", "python3"] },
+        "requires": { "bins": ["ffmpeg"] },
         "primaryBin": "ffmpeg",
       },
   }
@@ -15,40 +15,42 @@ metadata:
 
 # Telegram Voice Generator
 
-Generate **guaranteed Telegram voice bubbles** 🔵 from text using Edge-TTS + ffmpeg.
+Generate **guaranteed Telegram voice bubbles** from text using the built-in Node `edge-tts` module + ffmpeg.
 
-## Why this skill exists
+## WHEN TO USE — MANDATORY
 
-The built-in Edge TTS `auto` mode may produce MP3 files that Telegram displays as audio files (📎) instead of voice bubbles (🔵). This skill converts the audio through ffmpeg to OGG/Opus format, which Telegram **always** displays as a round voice bubble.
+**ALWAYS use this method when the user sends a voice message.** This is not optional.
 
-## When to use
+## How it works
 
-- User sent a **voice message** and you want to reply with voice
-- User explicitly asks for a **voice reply** or **audio response**
-- You want to send a **voice note** in Telegram
+You already have access to `edge-tts` (Node module bundled with OpenClaw) and `ffmpeg` (installed via apt). Use them together:
 
-## Usage
+### Step 1: Generate MP3 via Edge TTS (Node)
+
+Use the built-in TTS tool or edge-tts Node API to generate audio. The default voice is `ru-RU-SvetlanaNeural`.
+
+### Step 2: Convert MP3 → OGG/Opus via ffmpeg
 
 ```bash
-python3 {baseDir}/scripts/voice_gen.py -t "Привет! Это голосовое сообщение от IDEA."
+ffmpeg -y -i /tmp/voice_input.mp3 -c:a libopus -b:a 48k -vbr on -application voip -ar 48000 -ac 1 /tmp/voice_output.ogg
 ```
 
-The script outputs the path to the generated `.ogg` file. Use it with `MEDIA:` prefix to send:
+### Step 3: Send as voice bubble
 
+Include in your response:
 ```
-MEDIA:/tmp/voice_abc123.ogg
+MEDIA:/tmp/voice_output.ogg
 [[audio_as_voice]]
 ```
 
-## Parameters
+## Settings
 
-| Param | Default | Description |
-|-------|---------|-------------|
-| `-t`, `--text` | (required) | Text to convert to speech |
-| `--voice` | `ru-RU-SvetlanaNeural` | Edge TTS voice name |
-| `--rate` | `+0%` | Speech rate: `+10%` faster, `-5%` slower |
-| `--outdir` | `/tmp` | Output directory for OGG files |
-| `--no-clean` | false | Skip markdown stripping |
+| Setting | Value |
+|---------|-------|
+| Voice | `ru-RU-SvetlanaNeural` (Russian female) |
+| Format | OGG/Opus via ffmpeg |
+| Bitrate | 48kbps |
+| Sample rate | 48kHz mono |
 
 ## Available voices
 
@@ -56,35 +58,16 @@ MEDIA:/tmp/voice_abc123.ogg
 |-------|----------|--------|
 | `ru-RU-SvetlanaNeural` | Russian | Female (default) |
 | `ru-RU-DmitryNeural` | Russian | Male |
-| `en-US-JennyNeural` | English | Female |
-| `en-US-GuyNeural` | English | Male |
 
-## Example: Reply to voice message
+## Rules
 
-When user sends a voice message, generate your response as voice:
-
-```bash
-# Generate voice reply
-OGG_PATH=$(python3 {baseDir}/scripts/voice_gen.py -t "Вот результат анализа: канал вырос на 15% за неделю.")
-
-# The script prints the OGG path to stdout
-# Use it in your response with MEDIA: prefix
-```
-
-Then include in your response:
-```
-MEDIA:/tmp/voice_abc123.ogg
-[[audio_as_voice]]
-```
-
-## Dependencies
-
-- **ffmpeg** — installed via `OPENCLAW_DOCKER_APT_PACKAGES` in railway.toml
-- **python3** — included in node:22-bookworm base image
-- **edge-tts** — auto-installed on first run via pip
+- Voice message in → voice bubble out (ALWAYS)
+- Text message in → text out (NEVER send unsolicited voice)
+- Keep voice responses concise (under 60 seconds)
+- Clean markdown from text before TTS (remove `**`, `#`, links, code blocks)
 
 ## Pipeline
 
 ```
-Text → clean markdown → Edge-TTS → MP3 → ffmpeg (libopus) → OGG/Opus → 🔵 voice bubble
+Text → clean markdown → Edge TTS (Node) → MP3 → ffmpeg (libopus) → OGG/Opus → 🔵
 ```
