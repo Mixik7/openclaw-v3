@@ -1,24 +1,32 @@
 ---
 name: n8n-api
-description: Control n8n workflow automation via REST API. Use when the user asks to trigger workflows, check execution status, list workflows, or manage n8n automations. Requires N8N_API_KEY and N8N_BASE_URL environment variables.
+description: Control the Content Factory via N8N REST API. Use when the user asks to publish video, generate music, check status, manage articles, list workflows, or monitor automations. This is the primary skill for content operations. Requires N8N_API_KEY and N8N_BASE_URL environment variables.
 metadata: { "openclaw": { "emoji": "⚙️", "requires": { "env": ["N8N_API_KEY", "N8N_BASE_URL"] }, "primaryEnv": "N8N_API_KEY", "homepage": "https://n8n.io" } }
 ---
 
-# n8n API Skill
+# N8N API Skill — Content Factory Operations
 
-Control the Content Factory n8n instance via REST API. This skill lets you trigger workflows, check statuses, list workflows, and monitor automations.
+Control the Content Factory N8N instance. This is the **primary skill for content commands**: publishing, music generation, article management, and workflow monitoring.
 
-## Configuration
+## When to Use This Skill
 
-Environment variables (set in Railway or openclaw.json):
-- `N8N_API_KEY` — JWT token for n8n API authentication
-- `N8N_BASE_URL` — n8n instance URL (e.g. `https://n8n-production-fc90.up.railway.app`)
+| User says... | Action |
+|-------------|--------|
+| "publish video" / "выложи видео" | Trigger WF 01 Router via knowledge of WF structure |
+| "music" / "музыка" | Music generation pipeline |
+| "status" / "статус" | Channel status via WF 05 |
+| "article" / "статья" | SEO article pipeline (WF 16→17→18) |
+| "list workflows" | List all N8N workflows |
+| "check executions" | Recent execution history |
+
+**Do NOT use agent-delegate (WF 26) for these operations.** This skill calls N8N directly.
 
 ## Authentication
 
 All API requests use header:
-```
-X-N8N-API-KEY: $N8N_API_KEY
+```bash
+curl -s "$N8N_BASE_URL/api/v1/<endpoint>" \
+  -H "X-N8N-API-KEY: $N8N_API_KEY"
 ```
 
 ## Core Operations
@@ -37,20 +45,18 @@ curl -s "$N8N_BASE_URL/api/v1/workflows/WORKFLOW_ID" \
   -H "X-N8N-API-KEY: $N8N_API_KEY" | jq '{id, name, active, nodes: [.nodes[].name]}'
 ```
 
-### Activate/Deactivate Workflow
+### Activate Workflow
 
 ```bash
-# Activate
-curl -s -X PATCH "$N8N_BASE_URL/api/v1/workflows/WORKFLOW_ID" \
-  -H "X-N8N-API-KEY: $N8N_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"active": true}'
+curl -s -X POST "$N8N_BASE_URL/api/v1/workflows/WORKFLOW_ID/activate" \
+  -H "X-N8N-API-KEY: $N8N_API_KEY"
+```
 
-# Deactivate
-curl -s -X PATCH "$N8N_BASE_URL/api/v1/workflows/WORKFLOW_ID" \
-  -H "X-N8N-API-KEY: $N8N_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"active": false}'
+### Deactivate Workflow
+
+```bash
+curl -s -X POST "$N8N_BASE_URL/api/v1/workflows/WORKFLOW_ID/deactivate" \
+  -H "X-N8N-API-KEY: $N8N_API_KEY"
 ```
 
 ### Get Recent Executions
@@ -67,30 +73,60 @@ curl -s "$N8N_BASE_URL/api/v1/executions/EXECUTION_ID" \
   -H "X-N8N-API-KEY: $N8N_API_KEY" | jq '{id, status, data: .data.resultData.error}'
 ```
 
-## Content Factory Workflows
+## Content Factory Workflows (27 total)
 
-Key workflow names and their purposes:
+### Core Content (WF 01-07)
+| # | Name | ID | Trigger |
+|---|------|----|---------|
+| 01 | Telegram Router | `7h11iwrBtElelwwpiPHbb` | Telegram webhook (@My_Asst_c2) |
+| 02 | YouTube Publishing | `IQA0eAMXkyBWSrFR` | Cron 9/13/19 + Router |
+| 03 | TikTok Publishing | `OlVizpU4pV7WGrK2` | Cron 12:00 + Router |
+| 04 | VK Publishing | `9nQEUNj6xc07hKdN` | Cron 10/14/20 + Router |
+| 05 | AI Mozgi | `5QtaHWA8QUyC1TqE` | Execute Workflow (Claude Sonnet 4) |
+| 06 | Music Generation | `wn4VgYjBHgTHFNbRmCSko` | Execute Workflow (Kie.ai) |
+| 07 | Event Logger | `KZwQpHP6qrNkVvzHB94Un` | Execute Workflow |
 
-| Name | Purpose |
-|------|---------|
-| `1_Router_Core` | Telegram command routing |
-| `2_Content_Scheduler` | Cron scheduler for video publishing |
-| `2a_Channel_Worker_Acc01/02/03` | YouTube upload workers per account |
-| `3_Status_Service` | Channel status monitoring |
-| `3a_Status_Worker` | Status query worker |
-| `5_AI_Chat` | AI responses (Groq/Claude/Gemini) |
-| `6_Suno_Music` | Music generation via Suno |
-| `7_Event_Logger` | Event logging to Google Sheet |
+### SEO Text Content (WF 16-18)
+| # | Name | ID | Trigger |
+|---|------|----|---------|
+| 16 | News Collector | `yq0Tlm0ukRzOw9IP` | Cron 6h / `/news_collect` |
+| 17 | Content Processor | `uMXIqx8Ty6PthUCN` | Execute Workflow |
+| 18 | Text Publisher | `MsNRDjTffBC0hi29` | Cron 10/18 / `/approve` |
 
-The `_v3` suffixed workflows are fixed versions (inactive, awaiting activation).
+### TG-Kombain Automation (WF 14-15, 19-25)
+| # | Name | ID | Purpose |
+|---|------|----|---------|
+| 14 | Warmup Scheduler | `HEo7VCJNBQ4l5EOJ` | Account warmup cron |
+| 15 | TG Control | `fTw1h8nqG5nA4Fd3` | Account management |
+| 19 | Audience Acquisition | `aBncMREQTKX2kB85` | Automated parsing |
+| 20 | Smart Invite | `I8ijUejvMxIckcqG` | Invite campaigns |
+| 21 | Content Feedback | `073Y5hNjIrIjLtbO` | Quality feedback loop |
+| 22 | Engagement Booster | `FhFNghBmFAvQ2dNL` | Engagement automation |
+| 23 | Ad Pipeline | `Z6RbfJblESOP5Kar` | Ad orchestration |
+| 24 | Mutual PR | `kIxHVulFXYeH3zJo` | Cross-promotion |
+| 25 | Viral Campaign | `pjl9GXSeOMSihMRd` | Viral campaigns |
 
-## Scripts
+### Agent Ecosystem (WF 09, 26-30)
+| # | Name | ID | Purpose |
+|---|------|----|---------|
+| 09 | OpenClaw Bridge | `mXnfHX25m0eEcixc` | N8N → OpenClaw |
+| 26 | Agent Dispatcher | `uNUbgpRcXbvToZcF` | Inter-agent routing |
+| 27 | Result Collector | `fWiswnHYt2w3vq2E` | Agent results |
+| 28 | Analytics | `A0hwGzeStnN0lUi8` | Cross-agent KPI |
+| 29 | Strategy | `FQhWmhWvpRdKbuFn` | Content strategy |
+| 30 | Feedback Loop | `dkn2xB9ZQtgWFYH3` | Pipeline feedback |
 
-Use `{baseDir}/scripts/n8n-status.sh` to get a quick overview of all workflows and recent executions.
+### Inactive
+| # | Name | ID | Reason |
+|---|------|----|--------|
+| 08 | TikTok Token | `4xfXnDMiRCKfuduR` | Late.dev handles tokens |
+| 13 | Jarvis Bot | `pvQMTF9etkC4qTxd` | Deactivated (spam) |
 
 ## Tips
 
-- Always check `active` field before triggering — inactive workflows won't execute
-- Use `_v3` workflows for testing, original workflows for production
-- The Scheduler runs on cron — don't trigger it manually unless testing
-- Event Logger records all actions — check it for audit trail
+- Always check `active` field before assuming a workflow runs
+- WF 02/03/04 run on cron AND can be triggered manually via WF 01
+- WF 05 (AI Mozgi) is called by WF 01 Router — not independently triggered
+- WF 16→17→18 is the SEO article pipeline: collect → process → publish
+- WF 19-25 are TG-Kombain automation crons — they run autonomously
+- WF 26-30 are agent ecosystem support — don't trigger manually unless debugging

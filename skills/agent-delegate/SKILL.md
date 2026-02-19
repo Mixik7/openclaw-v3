@@ -1,29 +1,45 @@
 ---
 name: agent-delegate
-description: Delegate tasks to other AI agents in the ecosystem (Moltis for deep research/analysis, TG-Kombain for Telegram automation). Use when the user's request needs capabilities beyond your own — complex analysis, research tasks, or Telegram data operations. Requires N8N_BASE_URL environment variable.
+description: Delegate tasks to other AI agents — Moltis for deep research/analysis, TG-Kombain for complex multi-step automation. Use ONLY for inter-agent delegation where another agent's reasoning is needed. Do NOT use for system commands (publish, music, status) — use n8n-api skill instead. Do NOT use for data queries — use tg-kombain skill instead. Requires N8N_BASE_URL environment variable.
 metadata: { "openclaw": { "emoji": "🤝", "requires": { "env": ["N8N_BASE_URL"] }, "primaryEnv": "N8N_BASE_URL" } }
 ---
 
-# Agent Delegation
+# Agent Delegation (Inter-Agent ONLY)
 
-Delegate tasks to other AI agents in the Content Factory ecosystem via the N8N Agent Dispatcher (WF 26).
+Delegate tasks to other AI agents in the Content Factory ecosystem via N8N WF 26 Agent Dispatcher.
+
+## CRITICAL: When to Use vs When NOT to Use
+
+### USE this skill when:
+- User asks you to **delegate reasoning** to another agent
+- "Ask Moltis to analyze competitive landscape"
+- "Have TG-Kombain run a full parsing strategy for channel X"
+- Task requires **another agent's judgment**, not just data retrieval
+
+### DO NOT use this skill when:
+- User wants to **publish content** → use `n8n-api` skill
+- User wants **data or stats** → use `tg-kombain` skill
+- User wants to **trigger a workflow** → use `n8n-api` skill
+- User wants **system health check** → use `tg-kombain` skill
+
+**Rule of thumb:** If the request can be fulfilled by a single API call, don't delegate. Only delegate when the task needs multi-step reasoning from another agent.
 
 ## Architecture
 
 ```
-You (IDEA/OpenClaw) ──► N8N Agent Dispatcher ──► Target Agent
-                                                   ├── Moltis (deep research)
-                                                   ├── TG-Kombain (TG automation)
-                                                   └── N8N (workflow triggers)
+You (IDEA/Secretary) ──► N8N WF 26 ──► Target Agent
+                                         ├── Moltis Atlas (deep research, analysis)
+                                         ├── TG-Kombain (complex multi-step automation)
+                                         └── N8N (workflow orchestration)
 ```
 
-## When to Delegate
+## When to Delegate to Each Agent
 
-| Agent | Delegate When... |
-|-------|-----------------|
-| **Moltis** | User needs deep research, competitive analysis, complex reasoning, monitoring alerts |
-| **TG-Kombain** | User needs Telegram data (stats, parsed users, channels), automation (parsing, warmup), ad pipeline |
-| **N8N** | User needs to trigger a specific workflow, check execution status |
+| Agent | Delegate for... | NOT for... |
+|-------|----------------|-----------|
+| **Moltis** | Deep research, competitive analysis, complex reasoning, monitoring strategy | Simple data queries (use tg-kombain) |
+| **TG-Kombain** | Complex multi-step automation requiring planning | Single API calls (use tg-kombain) |
+| **N8N** | Complex workflow orchestration requiring judgment | Simple workflow triggers (use n8n-api) |
 
 ## Delegation via N8N Webhook
 
@@ -48,20 +64,18 @@ You (IDEA/OpenClaw) ──► N8N Agent Dispatcher ──► Target Agent
 ```
 
 ### Valid Agents
-- `openclaw` (this agent)
-- `moltis` (deep research, Rust sandbox)
-- `tg-kombain` (Telegram automation, 55K LOC)
+- `openclaw` (this agent — you)
+- `moltis` (deep research, Rust sandbox, 33 MCP tools)
+- `tg-kombain` (Telegram automation platform)
 - `n8n` (workflow orchestration)
 
 ### Valid Actions
-- `delegate` — ask another agent to perform a task
-- `query` — ask for data without side effects
+- `delegate` — ask another agent to perform a reasoning task
+- `query` — ask for synthesized analysis (not raw data)
 - `notify` — send a notification (no response expected)
-- `result` — return a completed task result
 
-## Examples
+## Example: Delegate Research to Moltis
 
-### Delegate deep analysis to Moltis
 ```bash
 curl -s -X POST "$N8N_BASE_URL/webhook/agent-dispatch" \
   -H "Content-Type: application/json" \
@@ -70,7 +84,7 @@ curl -s -X POST "$N8N_BASE_URL/webhook/agent-dispatch" \
     "to_agent": "moltis",
     "action": "delegate",
     "payload": {
-      "message": "Analyze competitive landscape for Telegram channels in crypto niche. Compare top 10 channels by engagement, growth, and content strategy."
+      "message": "Analyze competitive landscape for Telegram channels in crypto niche. Compare top 10 channels by engagement, growth, and content strategy. Use get_audience_insights and get_parsed_channels tools."
     },
     "metadata": {
       "priority": "normal",
@@ -80,38 +94,9 @@ curl -s -X POST "$N8N_BASE_URL/webhook/agent-dispatch" \
   }'
 ```
 
-### Query TG-Kombain for stats
-```bash
-curl -s -X POST "$N8N_BASE_URL/webhook/agent-dispatch" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from_agent": "openclaw",
-    "to_agent": "tg-kombain",
-    "action": "query",
-    "payload": {
-      "action": "stats"
-    }
-  }'
-```
-
-### Trigger N8N workflow
-```bash
-curl -s -X POST "$N8N_BASE_URL/webhook/agent-dispatch" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from_agent": "openclaw",
-    "to_agent": "n8n",
-    "action": "delegate",
-    "payload": {
-      "workflow": "content-strategy",
-      "message": "Run weekly content strategy analysis"
-    }
-  }'
-```
-
 ## Result Callback
 
-When a delegated task completes, the result is sent to your hooks endpoint:
+When a delegated task completes, the result arrives at your hooks endpoint:
 `POST /hooks/agent` with body:
 ```json
 {
