@@ -56,8 +56,8 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "cliproxy/claude-sonnet-4-6",
-        "fallbacks": ["openai/gpt-4o"]
+        "primary": "cliproxy/gemini-3-pro-high",
+        "fallbacks": ["cliproxy/claude-sonnet-4-6"]
       },
       "workspace": "/home/node/.openclaw/workspace"
     }
