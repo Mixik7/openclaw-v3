@@ -12,6 +12,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { runExec } from "../process/exec.js";
 import type { ReplyPayload } from "../auto-reply/types.js";
 import type { ChannelId } from "../channels/plugins/types.js";
 import type { OpenClawConfig } from "../config/config.js";
@@ -1158,6 +1159,15 @@ async function edgeTTS(params: {
   await tts.ttsPromise(text, outputPath);
 }
 
+/** Convert audio file to OGG/Opus via ffmpeg (for Telegram voice bubbles). */
+async function convertToOggOpus(inputPath: string, outputPath: string): Promise<void> {
+  await runExec(
+    "ffmpeg",
+    ["-y", "-i", inputPath, "-c:a", "libopus", "-b:a", "48k", "-ar", "48000", "-ac", "1", outputPath],
+    { timeoutMs: 15_000 },
+  );
+}
+
 export async function textToSpeech(params: {
   text: string;
   cfg: OpenClawConfig;
@@ -1243,11 +1253,25 @@ export async function textToSpeech(params: {
         }
 
         scheduleCleanup(tempDir);
-        const voiceCompatible = isVoiceCompatibleAudio({ fileName: edgeResult.audioPath });
+        let finalAudioPath = edgeResult.audioPath;
+        let voiceCompatible = isVoiceCompatibleAudio({ fileName: finalAudioPath });
+
+        // If Edge TTS produced non-voice-compatible file (MP3 fallback), convert to OGG via ffmpeg
+        if (!voiceCompatible) {
+          const oggPath = finalAudioPath.replace(/\.[^.]+$/, ".ogg");
+          try {
+            await convertToOggOpus(finalAudioPath, oggPath);
+            finalAudioPath = oggPath;
+            voiceCompatible = true;
+            logVerbose("TTS: converted Edge MP3 to OGG/Opus via ffmpeg.");
+          } catch (ffmpegErr) {
+            logVerbose(`TTS: ffmpeg conversion failed, keeping MP3. ${ffmpegErr}`);
+          }
+        }
 
         return {
           success: true,
-          audioPath: edgeResult.audioPath,
+          audioPath: finalAudioPath,
           latencyMs: Date.now() - providerStart,
           provider,
           outputFormat: edgeResult.outputFormat,
