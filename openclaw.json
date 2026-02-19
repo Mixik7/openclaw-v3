@@ -64,7 +64,7 @@
   },
   "messages": {
     "tts": {
-      "auto": "off",
+      "auto": "inbound",
       "provider": "edge",
       "edge": {
         "voice": "ru-RU-SvetlanaNeural",
