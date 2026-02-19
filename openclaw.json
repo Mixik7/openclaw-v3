@@ -84,6 +84,19 @@
       "streamMode": "partial"
     }
   },
+  "tools": {
+    "media": {
+      "audio": {
+        "models": [
+          {
+            "provider": "groq",
+            "model": "whisper-large-v3-turbo"
+          }
+        ],
+        "language": "ru"
+      }
+    }
+  },
   "skills": {
     "entries": {
       "n8n-api": {
