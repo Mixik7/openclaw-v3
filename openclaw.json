@@ -62,6 +62,20 @@
       "workspace": "/home/node/.openclaw/workspace"
     }
   },
+  "messages": {
+    "tts": {
+      "enabled": true,
+      "auto": "inbound",
+      "provider": "edge",
+      "edge": {
+        "voice": "ru-RU-SvetlanaNeural",
+        "lang": "ru-RU",
+        "outputFormat": "ogg-24khz-16bit-mono-opus",
+        "rate": "+0%",
+        "pitch": "+0%"
+      }
+    }
+  },
   "channels": {
     "telegram": {
       "enabled": true,

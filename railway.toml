@@ -1,0 +1,6 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[build.args]
+OPENCLAW_DOCKER_APT_PACKAGES = "ffmpeg python3-venv"
