@@ -94,6 +94,9 @@
       },
       "agent-delegate": {
         "enabled": true
+      },
+      "telegram-voice": {
+        "enabled": true
       }
     }
   },
