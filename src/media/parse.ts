@@ -165,8 +165,15 @@ export function splitMediaFromOutput(raw: string): {
           pieces.push(invalidParts.join(" "));
         }
       } else {
-        // If no valid media was found in this match, keep the original token text.
-        pieces.push(match[0]);
+        // Strip local /tmp/ paths to prevent leaking MEDIA:/tmp/... as plain text.
+        // Do NOT add to media[] — let the auto-TTS system handle voice delivery.
+        const stripped = normalizeMediaSource(cleanCandidate(payloadValue));
+        if (stripped.startsWith("/tmp/") && !stripped.includes("..")) {
+          foundMediaToken = true;
+        } else {
+          // If no valid media was found in this match, keep the original token text.
+          pieces.push(match[0]);
+        }
       }
 
       cursor = start + match[0].length;
