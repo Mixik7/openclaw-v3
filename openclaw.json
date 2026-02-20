@@ -93,17 +93,6 @@
       "streamMode": "partial"
     }
   },
-  "browser": {
-    "enabled": true,
-    "headless": true,
-    "noSandbox": true,
-    "defaultProfile": "steel",
-    "profiles": {
-      "steel": {
-        "cdpUrl": "${STEEL_CDP_URL}"
-      }
-    }
-  },
   "tools": {
     "web": {
       "search": {
