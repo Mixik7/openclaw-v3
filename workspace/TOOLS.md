@@ -232,26 +232,33 @@ Saved cookies survive browser restarts. Use this for maintaining login sessions.
 
 #### Login Flow (first time or when session expires)
 
-1. **Login to Telegram Web (QR code):**
+**Primary: Ask user to login via Live View:**
 
-   ```
-   browser(action="navigate", profile="steel", targetUrl="https://web.telegram.org/a/")
-   browser(action="screenshot", profile="steel")
-   → Send QR screenshot to user: "Scan this QR with your Telegram app (Settings → Devices → Link Desktop Device)"
-   → Wait for user confirmation
-   browser(action="snapshot", profile="steel")  → verify TG Web loaded
-   browser(action="cookies-save", profile="steel", name="telegram")
-   ```
+Tell the user to open the Browserless debugger in their browser to login manually:
 
-2. **Complete syntx.ai OAuth (automatic after TG login):**
-   ```
-   browser(action="navigate", profile="steel", targetUrl="https://syntx.ai/login")
-   browser(action="snapshot", profile="steel")  → find Telegram login button
-   browser(action="act", profile="steel", request={kind="click", ref="<telegram_button_ref>"})
-   → OAuth popup auto-completes (TG session active)
-   browser(action="snapshot", profile="steel")  → verify dashboard loaded
-   browser(action="cookies-save", profile="steel", name="syntx")
-   ```
+```
+"Open this URL in your desktop browser to see the headless Chrome live:
+https://steel-browser-production-9501.up.railway.app?token=browserless-openclaw-2026
+Navigate to https://syntx.ai/login and login via Telegram. Let me know when done."
+```
+
+Then extract and save the session:
+
+```
+browser(action="cookies-save", profile="steel", name="syntx")
+```
+
+**Fallback: QR code (if user prefers):**
+
+```
+browser(action="navigate", profile="steel", targetUrl="https://web.telegram.org/a/")
+browser(action="screenshot", profile="steel")
+→ Describe the QR to user and ask them to open Live View URL to scan it
+browser(action="snapshot", profile="steel")  → verify TG Web loaded
+browser(action="cookies-save", profile="steel", name="telegram")
+→ Then navigate to syntx.ai/login → click Telegram → OAuth auto-completes
+browser(action="cookies-save", profile="steel", name="syntx")
+```
 
 #### Auto-restore (every subsequent session)
 
@@ -263,7 +270,7 @@ browser(action="navigate", profile="steel", targetUrl="https://syntx.ai/tools")
 browser(action="snapshot", profile="steel")
 → If dashboard visible → proceed
 → If login page → try: cookies-load("telegram") → repeat OAuth
-→ If TG session also expired → ask user to scan QR again
+→ If TG session also expired → ask user to login via Live View again
 ```
 
 #### Video Generation Workflow
