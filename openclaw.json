@@ -78,7 +78,7 @@
       "edge": {
         "voice": "ru-RU-SvetlanaNeural",
         "lang": "ru-RU",
-        "outputFormat": "ogg-24khz-16bit-mono-opus",
+        "outputFormat": "audio-24khz-48kbitrate-mono-mp3",
         "rate": "+0%",
         "pitch": "+0%"
       }
