@@ -32,6 +32,11 @@ const BROWSER_TOOL_ACTIONS = [
   "upload",
   "dialog",
   "act",
+  "cookies",
+  "cookies-set",
+  "cookies-clear",
+  "cookies-save",
+  "cookies-load",
 ] as const;
 
 const BROWSER_TARGETS = ["sandbox", "host", "node"] as const;
@@ -109,4 +114,16 @@ export const BrowserToolSchema = Type.Object({
   accept: Type.Optional(Type.Boolean()),
   promptText: Type.Optional(Type.String()),
   request: Type.Optional(BrowserActSchema),
+  // cookies-set fields
+  cookieName: Type.Optional(Type.String()),
+  cookieValue: Type.Optional(Type.String()),
+  url: Type.Optional(Type.String()),
+  domain: Type.Optional(Type.String()),
+  cookiePath: Type.Optional(Type.String()),
+  httpOnly: Type.Optional(Type.Boolean()),
+  secure: Type.Optional(Type.Boolean()),
+  sameSite: Type.Optional(Type.String()),
+  expires: Type.Optional(Type.Number()),
+  // cookies-save / cookies-load name
+  name: Type.Optional(Type.String()),
 });

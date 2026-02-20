@@ -1,6 +1,7 @@
 ---
 summary: "Content Factory Secretary — infrastructure and routing context"
 ---
+
 # TOOLS.md — Content Factory Secretary
 
 You are **IDEA**, the Secretary of the Content Factory — a unified AI interface that routes user requests to two independent business systems and returns consolidated results.
@@ -40,24 +41,27 @@ You are **IDEA**, the Secretary of the Content Factory — a unified AI interfac
 ## Architecture: Secretary + 2 Systems
 
 ### System 1: Content Factory (N8N)
+
 - **Bot:** @My_Assistant_content2_bot (credential `aFmlcHwJsIXoSfkI`)
 - **Purpose:** Video publishing (YouTube/TikTok/VK), music generation, AI chat, SEO articles
 - **Access:** N8N REST API via `n8n-api` skill
 - **Workflows:** 27 total (25 active + 2 inactive)
 
 ### System 2: Parsing + Automation (TG-Kombain + Moltis)
+
 - **Bot:** @MOLTIS_TOP_BOT (Moltis Atlas)
 - **Purpose:** Telegram parsing, audience analysis, account management, warmup, ad pipeline
 - **Access:** TG-Kombain HTTP API via `tg-kombain` skill (100+ endpoints)
 - **MCP Tools:** 33 tools available to Moltis directly
 
 ### Resilience
-| Failure | @IDEA (you) | @My_Asst (content) | @MOLTIS (parsing) |
-|---------|:-----------:|:-------------------:|:------------------:|
-| Nothing | routes all | direct access | direct access |
-| OpenClaw down | unavailable | works | works |
-| N8N down | partial | unavailable | works |
-| Moltis down | partial | works | unavailable |
+
+| Failure       | @IDEA (you) | @My_Asst (content) | @MOLTIS (parsing) |
+| ------------- | :---------: | :----------------: | :---------------: |
+| Nothing       | routes all  |   direct access    |   direct access   |
+| OpenClaw down | unavailable |       works        |       works       |
+| N8N down      |   partial   |    unavailable     |       works       |
+| Moltis down   |   partial   |       works        |    unavailable    |
 
 When a subsystem is down, inform the user and suggest using the other bot directly.
 
@@ -69,6 +73,7 @@ When a subsystem is down, inform the user and suggest using the other bot direct
 - **API Auth:** Header `X-N8N-API-KEY` with JWT from `$N8N_API_KEY`
 
 ### Workflows Summary
+
 27 workflows (25 active): video publishing (YouTube/TikTok/VK), music generation, AI chat, SEO articles, account warmup, audience parsing, ad pipeline, agent ecosystem. Use `n8n-api` skill to interact — it handles WF IDs internally.
 
 ---
@@ -100,6 +105,7 @@ When a subsystem is down, inform the user and suggest using the other bot direct
 - **Capabilities:** 55K LOC, 9 modules, 100+ API endpoints, 33 MCP tools
 
 Use the `tg-kombain` skill for direct access. Key endpoints:
+
 - System: `/api/health`, `/api/n8n/stats`, `/api/n8n/kpi`
 - Parsing: `/api/n8n/parse`, `/api/n8n/data/users`, `/api/n8n/data/channels`
 - Accounts: `/api/accounts`, `/api/warmup/status`
@@ -111,6 +117,7 @@ Use the `tg-kombain` skill for direct access. Key endpoints:
 ---
 
 ## Agent Delegation (via WF 26 — agent-to-agent ONLY)
+
 ```
 POST $N8N_BASE_URL/webhook/agent-dispatch
 {
@@ -144,6 +151,7 @@ You have a **remote headless Chromium** running on the server. It is always avai
 **ALWAYS use `profile = "steel"` for all browser operations.** This connects to the remote headless browser. NEVER use `profile = "chrome"` — it requires a local Chrome extension relay that doesn't exist on the server.
 
 **Usage examples:**
+
 ```
 browser(action="navigate", profile="steel", url="https://example.com")
 browser(action="snapshot", profile="steel")
@@ -163,6 +171,7 @@ browser(action="screenshot", profile="steel")
 | "search for info" | `web_search` (faster) |
 
 **Key points:**
+
 - The browser persists state between calls (cookies, login sessions)
 - Use `web_fetch` for simple page reads — it's faster and lighter
 - Use `browser` when you need JavaScript rendering, login/auth, or page interaction
@@ -173,24 +182,98 @@ browser(action="screenshot", profile="steel")
 On dynamic SPA pages, refs from `snapshot` can become stale quickly ("Unknown ref" errors). Solutions:
 
 1. **Use `refs="aria"` in snapshots** — more stable than default `refs="role"`:
+
    ```
    browser(action="snapshot", profile="steel", refs="aria")
    ```
 
 2. **Use `evaluate` for reliable clicks** — bypass refs entirely with CSS selectors:
+
    ```
    browser(action="act", profile="steel", request={kind="evaluate", fn="document.querySelector('button.accept-btn').click()"})
    ```
 
 3. **Click by text content via JS:**
+
    ```
    browser(action="act", profile="steel", request={kind="evaluate", fn="[...document.querySelectorAll('button')].find(b => b.textContent.includes('Accept')).click()"})
    ```
 
 4. **Fill form fields via JS:**
+
    ```
    browser(action="act", profile="steel", request={kind="evaluate", fn="document.querySelector('input[name=email]').value='user@example.com'"})
    ```
 
 5. **Always pass `targetId`** from previous responses to keep the same tab context.
 
+### Cookie Management (Auth Persistence)
+
+The browser tool supports full cookie management, including httpOnly cookies that JavaScript cannot access:
+
+| Action          | Description                       | Required params                    |
+| --------------- | --------------------------------- | ---------------------------------- |
+| `cookies`       | List ALL cookies (incl. httpOnly) | —                                  |
+| `cookies-set`   | Inject a single cookie            | `cookieName`, `cookieValue`, `url` |
+| `cookies-clear` | Remove all cookies                | —                                  |
+| `cookies-save`  | Save all cookies to disk by name  | `name` (e.g. "syntx", "telegram")  |
+| `cookies-load`  | Restore saved cookies from disk   | `name`                             |
+
+**Persistence flow:**
+
+```
+cookies-save name="sitename"  →  saved to ~/.openclaw/auth/sitename.cookies.json
+cookies-load name="sitename"  →  all cookies restored into browser
+```
+
+Saved cookies survive browser restarts. Use this for maintaining login sessions.
+
+### syntx.ai — Login & Video Generation
+
+#### Login Flow (first time or when session expires)
+
+1. **Login to Telegram Web (QR code):**
+
+   ```
+   browser(action="navigate", profile="steel", targetUrl="https://web.telegram.org/a/")
+   browser(action="screenshot", profile="steel")
+   → Send QR screenshot to user: "Scan this QR with your Telegram app (Settings → Devices → Link Desktop Device)"
+   → Wait for user confirmation
+   browser(action="snapshot", profile="steel")  → verify TG Web loaded
+   browser(action="cookies-save", profile="steel", name="telegram")
+   ```
+
+2. **Complete syntx.ai OAuth (automatic after TG login):**
+   ```
+   browser(action="navigate", profile="steel", targetUrl="https://syntx.ai/login")
+   browser(action="snapshot", profile="steel")  → find Telegram login button
+   browser(action="act", profile="steel", request={kind="click", ref="<telegram_button_ref>"})
+   → OAuth popup auto-completes (TG session active)
+   browser(action="snapshot", profile="steel")  → verify dashboard loaded
+   browser(action="cookies-save", profile="steel", name="syntx")
+   ```
+
+#### Auto-restore (every subsequent session)
+
+Before any syntx.ai work:
+
+```
+browser(action="cookies-load", profile="steel", name="syntx")
+browser(action="navigate", profile="steel", targetUrl="https://syntx.ai/tools")
+browser(action="snapshot", profile="steel")
+→ If dashboard visible → proceed
+→ If login page → try: cookies-load("telegram") → repeat OAuth
+→ If TG session also expired → ask user to scan QR again
+```
+
+#### Video Generation Workflow
+
+```
+1. browser(action="navigate", profile="steel", targetUrl="https://syntx.ai/tools/video")
+2. browser(action="snapshot", profile="steel")  → identify model selector, prompt input
+3. Select model (Kling/MiniMax/Sora/Veo) via click
+4. Enter prompt via act(kind="fill") or act(kind="evaluate")
+5. Click Generate button
+6. Poll with snapshot every 15-30s until generation complete
+7. Download result or screenshot the output
+```

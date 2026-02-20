@@ -1,4 +1,11 @@
 import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
+import {
+  browserCookies,
+  browserCookiesClear,
+  browserCookiesSet,
+} from "../../browser/client-actions-state.js";
 import {
   browserAct,
   browserArmDialog,
@@ -23,10 +30,45 @@ import { resolveBrowserConfig } from "../../browser/config.js";
 import { DEFAULT_AI_SNAPSHOT_MAX_CHARS } from "../../browser/constants.js";
 import { loadConfig } from "../../config/config.js";
 import { saveMediaBuffer } from "../../media/store.js";
+import { CONFIG_DIR } from "../../utils.js";
 import { BrowserToolSchema } from "./browser-tool.schema.js";
 import { type AnyAgentTool, imageResultFromFile, jsonResult, readStringParam } from "./common.js";
 import { callGatewayTool } from "./gateway.js";
 import { listNodes, resolveNodeIdFromList, type NodeListNode } from "./nodes-utils.js";
+
+// --- Cookie persistence helpers ---
+
+const COOKIES_AUTH_DIR = path.join(CONFIG_DIR, "auth");
+
+async function ensureAuthDir(): Promise<void> {
+  await fs.mkdir(COOKIES_AUTH_DIR, { recursive: true });
+}
+
+function cookieFilePath(name: string): string {
+  // Sanitize name to prevent path traversal
+  const safe = name.replace(/[^a-zA-Z0-9_-]/g, "_");
+  return path.join(COOKIES_AUTH_DIR, `${safe}.cookies.json`);
+}
+
+async function saveCookiesToFile(
+  name: string,
+  cookies: unknown[],
+): Promise<{ path: string; count: number }> {
+  await ensureAuthDir();
+  const filePath = cookieFilePath(name);
+  await fs.writeFile(filePath, JSON.stringify(cookies, null, 2), "utf-8");
+  return { path: filePath, count: cookies.length };
+}
+
+async function loadCookiesFromFile(name: string): Promise<unknown[]> {
+  const filePath = cookieFilePath(name);
+  const raw = await fs.readFile(filePath, "utf-8");
+  const parsed = JSON.parse(raw);
+  if (!Array.isArray(parsed)) {
+    throw new Error(`Invalid cookies file: expected array, got ${typeof parsed}`);
+  }
+  return parsed;
+}
 
 type BrowserProxyFile = {
   path: string;
@@ -235,6 +277,7 @@ export function createBrowserTool(opts?: {
       'For stable, self-resolving refs across calls, use snapshot with refs="aria" (Playwright aria-ref ids). Default refs="role" are role+name-based.',
       'If refs become stale on dynamic pages (Unknown ref errors), use act with kind="evaluate" and fn="document.querySelector(selector).click()" to interact via CSS selectors instead.',
       "Use snapshot+act for UI automation. Avoid act:wait by default; use only in exceptional cases when no reliable UI state exists.",
+      'Cookie management: "cookies" lists all cookies (incl. httpOnly), "cookies-set" injects a cookie (cookieName+cookieValue+url required), "cookies-clear" removes all. "cookies-save" persists cookies to disk by name, "cookies-load" restores them. Use for auth session persistence across browser restarts.',
       `target selects browser location (sandbox|host|node). Default: ${targetDefault}.`,
       hostHint,
     ].join(" "),
@@ -714,6 +757,129 @@ export function createBrowserTool(opts?: {
             }
             throw err;
           }
+        }
+        case "cookies": {
+          const targetId = readStringParam(params, "targetId");
+          if (proxyRequest) {
+            return jsonResult(
+              await proxyRequest({
+                method: "GET",
+                path: "/cookies",
+                profile,
+                query: { targetId },
+              }),
+            );
+          }
+          return jsonResult(await browserCookies(baseUrl, { targetId, profile }));
+        }
+        case "cookies-set": {
+          const cookieName = readStringParam(params, "cookieName", {
+            required: true,
+            label: "cookieName",
+          });
+          const cookieValue = readStringParam(params, "cookieValue", {
+            required: true,
+            label: "cookieValue",
+          });
+          const url = readStringParam(params, "url");
+          const domain = readStringParam(params, "domain");
+          const cookiePath = readStringParam(params, "cookiePath");
+          const targetId = readStringParam(params, "targetId");
+          const cookie: Record<string, unknown> = {
+            name: cookieName,
+            value: cookieValue,
+          };
+          if (url) {
+            cookie.url = url;
+          }
+          if (domain) {
+            cookie.domain = domain;
+          }
+          if (cookiePath) {
+            cookie.path = cookiePath;
+          }
+          if (typeof params.httpOnly === "boolean") {
+            cookie.httpOnly = params.httpOnly;
+          }
+          if (typeof params.secure === "boolean") {
+            cookie.secure = params.secure;
+          }
+          if (typeof params.sameSite === "string") {
+            cookie.sameSite = params.sameSite;
+          }
+          if (typeof params.expires === "number") {
+            cookie.expires = params.expires;
+          }
+          if (proxyRequest) {
+            return jsonResult(
+              await proxyRequest({
+                method: "POST",
+                path: "/cookies/set",
+                profile,
+                body: { cookie, targetId },
+              }),
+            );
+          }
+          return jsonResult(await browserCookiesSet(baseUrl, { cookie, targetId, profile }));
+        }
+        case "cookies-clear": {
+          const targetId = readStringParam(params, "targetId");
+          if (proxyRequest) {
+            return jsonResult(
+              await proxyRequest({
+                method: "POST",
+                path: "/cookies/clear",
+                profile,
+                body: { targetId },
+              }),
+            );
+          }
+          return jsonResult(await browserCookiesClear(baseUrl, { targetId, profile }));
+        }
+        case "cookies-save": {
+          const name = readStringParam(params, "name", { required: true, label: "name" });
+          const targetId = readStringParam(params, "targetId");
+          // Extract cookies from browser
+          const cookieResult = proxyRequest
+            ? ((await proxyRequest({
+                method: "GET",
+                path: "/cookies",
+                profile,
+                query: { targetId },
+              })) as { cookies?: unknown[] })
+            : await browserCookies(baseUrl, { targetId, profile });
+          const cookies = cookieResult.cookies ?? [];
+          // Save to file
+          const saveResult = await saveCookiesToFile(name, cookies);
+          return jsonResult({ ok: true, name, ...saveResult });
+        }
+        case "cookies-load": {
+          const name = readStringParam(params, "name", { required: true, label: "name" });
+          const targetId = readStringParam(params, "targetId");
+          // Load cookies from file
+          const cookies = await loadCookiesFromFile(name);
+          // Inject each cookie
+          let injected = 0;
+          for (const cookie of cookies) {
+            if (cookie && typeof cookie === "object") {
+              if (proxyRequest) {
+                await proxyRequest({
+                  method: "POST",
+                  path: "/cookies/set",
+                  profile,
+                  body: { cookie, targetId },
+                });
+              } else {
+                await browserCookiesSet(baseUrl, {
+                  cookie: cookie as Record<string, unknown>,
+                  targetId,
+                  profile,
+                });
+              }
+              injected++;
+            }
+          }
+          return jsonResult({ ok: true, name, injected, total: cookies.length });
         }
         default:
           throw new Error(`Unknown action: ${action}`);
