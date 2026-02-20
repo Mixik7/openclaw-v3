@@ -168,3 +168,29 @@ browser(action="screenshot", profile="steel")
 - Use `browser` when you need JavaScript rendering, login/auth, or page interaction
 - Always start with `action="navigate"` to open a URL, then use `action="snapshot"` to see page content
 
+### Dealing with Dynamic Pages (stale refs)
+
+On dynamic SPA pages, refs from `snapshot` can become stale quickly ("Unknown ref" errors). Solutions:
+
+1. **Use `refs="aria"` in snapshots** — more stable than default `refs="role"`:
+   ```
+   browser(action="snapshot", profile="steel", refs="aria")
+   ```
+
+2. **Use `evaluate` for reliable clicks** — bypass refs entirely with CSS selectors:
+   ```
+   browser(action="act", profile="steel", request={kind="evaluate", fn="document.querySelector('button.accept-btn').click()"})
+   ```
+
+3. **Click by text content via JS:**
+   ```
+   browser(action="act", profile="steel", request={kind="evaluate", fn="[...document.querySelectorAll('button')].find(b => b.textContent.includes('Accept')).click()"})
+   ```
+
+4. **Fill form fields via JS:**
+   ```
+   browser(action="act", profile="steel", request={kind="evaluate", fn="document.querySelector('input[name=email]').value='user@example.com'"})
+   ```
+
+5. **Always pass `targetId`** from previous responses to keep the same tab context.
+
