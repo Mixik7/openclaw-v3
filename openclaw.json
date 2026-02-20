@@ -21,6 +21,13 @@
         "api": "openai-completions",
         "models": [
           {
+            "id": "google/gemini-3-flash-preview",
+            "name": "Gemini 3 Flash Preview (OpenRouter)",
+            "input": ["text", "image"],
+            "contextWindow": 1048576,
+            "maxTokens": 65535
+          },
+          {
             "id": "google/gemini-2.5-flash",
             "name": "Gemini 2.5 Flash (OpenRouter)",
             "input": ["text", "image"],
@@ -62,7 +69,7 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "openrouter/google/gemini-2.5-flash",
+        "primary": "openrouter/google/gemini-3-flash-preview",
         "fallbacks": ["openrouter/openrouter/free", "polza/google/gemini-2.5-flash"]
       },
       "workspace": "/home/node/.openclaw/workspace"
