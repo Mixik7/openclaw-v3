@@ -63,10 +63,7 @@
     "defaults": {
       "model": {
         "primary": "openrouter/google/gemini-2.5-flash",
-        "fallbacks": [
-          "openrouter/openrouter/free",
-          "polza/google/gemini-2.5-flash"
-        ]
+        "fallbacks": ["openrouter/openrouter/free", "polza/google/gemini-2.5-flash"]
       },
       "workspace": "/home/node/.openclaw/workspace"
     }
@@ -141,6 +138,9 @@
       },
       "telegram-voice": {
         "enabled": false
+      },
+      "syntx-video": {
+        "enabled": true
       }
     }
   },
