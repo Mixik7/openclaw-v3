@@ -128,7 +128,7 @@
         "enabled": true
       },
       "telegram-voice": {
-        "enabled": true
+        "enabled": false
       }
     }
   },
