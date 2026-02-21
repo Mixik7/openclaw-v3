@@ -124,6 +124,41 @@ Modes: `channel_members`, `channel_posts`, `search_channels`, `search_users`
 | mutual_pr   | Cross-promotion finder           |
 | strategy    | AI strategy advisor              |
 
+### Image Generation (Phase 8.1)
+
+| Action      | Endpoint                  | Method |
+| ----------- | ------------------------- | ------ |
+| Generate    | `/api/n8n/image-generate` | POST   |
+| List models | `/api/n8n/image-models`   | GET    |
+
+**12+ models with aliases:** midjourney-v7 (mj), niji-v6 (niji), dall-e-3 (dalle3), flux-pro (flux), ideogram (ideo), gpt-image-1 (gpt-image), google/nano-banana (banana)
+
+**Generate image:**
+
+```bash
+curl -s -X POST "$TG_KOMBAIN_API_URL/api/n8n/image-generate" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"sunset over ocean","model":"midjourney-v7","size":"1024x1024"}'
+```
+
+**With auto-upload to Drive:**
+
+```json
+{ "prompt": "crypto cover", "model": "mj", "upload_to_drive": true, "channel_key": "ch_001" }
+```
+
+### Post with Media
+
+```bash
+curl -s -X POST "$TG_KOMBAIN_API_URL/api/n8n/post" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"channel":"@my_channel","text":"Post text","media_url":"https://..."}'
+```
+
+Fields: `media_url` (auto-download) OR `media_path` (local file in data/).
+
 ### Google Workspace
 
 | Action             | Endpoint                             | Method |
@@ -133,8 +168,45 @@ Modes: `channel_members`, `channel_posts`, `search_channels`, `search_users`
 | Append rows        | `/api/google/sheets/append`          | POST   |
 | Create spreadsheet | `/api/google/sheets/create`          | POST   |
 | List Drive files   | `/api/google/drive/list?folder_id=X` | GET    |
+| Upload to Drive    | `/api/google/drive/upload`           | POST   |
+| Create folder      | `/api/google/drive/create-folder`    | POST   |
+| Ensure path        | `/api/google/drive/ensure-path`      | POST   |
+| Download file      | `/api/google/drive/download/{id}`    | GET    |
 | Video inventory    | `/api/google/drive/video-inventory`  | GET    |
 | Google health      | `/api/google/health`                 | GET    |
+
+**Upload file from URL to Drive:**
+
+```bash
+curl -s -X POST "$TG_KOMBAIN_API_URL/api/google/drive/upload" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"folder_id":"abc123","url":"https://example.com/image.png","filename":"cover.png"}'
+```
+
+**Create folder path (mkdir -p):**
+
+```bash
+curl -s -X POST "$TG_KOMBAIN_API_URL/api/google/drive/ensure-path" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"root_id":"abc123","path":"Изображения/midjourney-v7/крипто"}'
+```
+
+### Image → Drive → Post Flow
+
+1. Generate: `POST /api/n8n/image-generate {"prompt":"...","model":"mj"}`
+2. Ensure path: `POST /api/google/drive/ensure-path {"root_id":"ch_folder","path":"Изображения/midjourney-v7/тема"}`
+3. Upload: `POST /api/google/drive/upload {"folder_id":"<from step 2>","url":"<image_url from step 1>"}`
+4. Show preview to user, wait for approval
+5. Post: `POST /api/n8n/post {"channel":"@ch","text":"...","media_url":"<image_url>"}`
+6. **ONLY if user explicitly says "нагони трафик":** `POST /api/agent/dispatch {"to_agent":"moltis",...}`
+
+### Video → Drive Flow
+
+1. Generate: use `syntx-video` skill
+2. User says "save to Drive": `POST /api/google/drive/ensure-path {"path":"Видео/kling/тема"}`
+3. Upload: `POST /api/google/drive/upload {"folder_id":"...","url":"<video_url>"}`
 
 **Read sheet:**
 
