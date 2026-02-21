@@ -131,7 +131,7 @@ Modes: `channel_members`, `channel_posts`, `search_channels`, `search_users`
 | Generate    | `/api/n8n/image-generate` | POST   |
 | List models | `/api/n8n/image-models`   | GET    |
 
-**12+ models with aliases:** midjourney-v7 (mj), niji-v6 (niji), dall-e-3 (dalle3), flux-pro (flux), ideogram (ideo), gpt-image-1 (gpt-image), google/nano-banana (banana)
+**11 models with aliases:** dall-e-3 (dalle3) ✅, flux-pro (flux) ✅, gpt-image-1 (gpt-image) ✅, midjourney-v7 (mj), midjourney-v6.1 (mj6), niji-v6 (niji), dall-e-2 (dalle2), google/nano-banana (banana)
 
 **Generate image:**
 

@@ -58,7 +58,7 @@ You are **IDEA**, the Secretary of the Content Factory — a unified AI interfac
 - **Bot:** @MOLTIS_TOP_BOT (Moltis Atlas)
 - **Purpose:** Telegram parsing, audience analysis, account management, warmup, ad pipeline
 - **Access:** TG-Kombain HTTP API via `tg-kombain` skill (100+ endpoints)
-- **MCP Tools:** 33 tools available to Moltis directly
+- **MCP Tools:** 46 tools available to Moltis directly
 
 ### Resilience
 
@@ -128,7 +128,7 @@ Use the `tg-kombain` skill for direct access. Key endpoints:
 - Audience: `/api/audience/insights`, `/api/n8n/data/overlap`
 - Ad pipeline: `/api/ad-pipeline/candidates`, `/api/ad-pipeline/scoring`
 - Agent Bridge: `/api/agent/dispatch`, `/api/agent/tasks`
-- MCP: `/mcp/` (Streamable HTTP, 33 tools)
+- MCP: `/mcp/` (Streamable HTTP, 46 tools)
 
 ---
 
