@@ -107,7 +107,7 @@ When a subsystem is down, inform the user and suggest using the other bot direct
 - After publishing, videos moved to archive subfolder
 - **Content Hub structure:** `channel/Тип/model/тема/file` (auto-created)
 - **Upload:** Use `/api/google/drive/upload` to save any file (image, video, text) to Drive
-- **Folder creation:** Use `/api/google/drive/ensure-path` to recursively create folder paths
+- **Folder creation:** Use `/api/google/drive/ensure-path` to recursively create folder paths. If `root_id` is empty, uses `DRIVE_CONTENT_HUB_ROOT` env as default root
 - **Video inventory check:** Use `/api/google/drive/video-inventory` to see stock levels
 
 **Traffic driving:** ONLY when user explicitly says "нагони трафик" or "drive traffic". NEVER auto-dispatch to Moltis after posting.

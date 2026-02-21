@@ -193,6 +193,8 @@ curl -s -X POST "$TG_KOMBAIN_API_URL/api/google/drive/ensure-path" \
   -d '{"root_id":"abc123","path":"Изображения/midjourney-v7/крипто"}'
 ```
 
+> **Note:** If `root_id` is empty or omitted, the server uses `DRIVE_CONTENT_HUB_ROOT` env var as fallback.
+
 ### Image → Drive → Post Flow
 
 1. Generate: `POST /api/n8n/image-generate {"prompt":"...","model":"mj"}`
