@@ -148,6 +148,9 @@
       },
       "syntx-video": {
         "enabled": true
+      },
+      "editorial-review": {
+        "enabled": true
       }
     }
   },
