@@ -140,10 +140,9 @@ curl -s "$N8N_BASE_URL/api/v1/executions/EXECUTION_ID" \
 
 ### Inactive
 
-| #   | Name         | ID                 | Reason                  |
-| --- | ------------ | ------------------ | ----------------------- |
-| 08  | TikTok Token | `4xfXnDMiRCKfuduR` | Late.dev handles tokens |
-| 13  | Jarvis Bot   | `pvQMTF9etkC4qTxd` | Deactivated (spam)      |
+| #      | Name           | ID                     | Reason             |
+| ------ | -------------- | ---------------------- | ------------------ |
+| ~~13~~ | ~~Jarvis Bot~~ | ~~`pvQMTF9etkC4qTxd`~~ | DELETED 2026-02-24 |
 
 ## Tips
 
