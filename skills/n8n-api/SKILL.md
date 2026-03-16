@@ -103,7 +103,7 @@ curl -s "$N8N_BASE_URL/api/v1/executions/EXECUTION_ID" \
 | --- | ----------------- | ------------------ | ----------------------------------------------- |
 | 16  | News Collector    | `yq0Tlm0ukRzOw9IP` | Cron 6h (10 channels, RSS+AI)                   |
 | 17  | Content Processor | `uMXIqx8Ty6PthUCN` | Execute Workflow (SEO + images via ElectronHub) |
-| 18  | Text Publisher    | `MsNRDjTffBC0hi29` | Execute Workflow (Telegram + VK + Telegraph)    |
+| 18  | Text Publisher    | `MsNRDjTffBC0hi29` | Execute Workflow (Telegram + Telegraph)         |
 | 33  | Channel Analysts  | `HuFkfwJR5Dqy6zCF` | Cron 4h (per-channel AI brain, ChannelMemory)   |
 | 34  | Content Executor  | `tX52Wmlk50esNd8t` | Cron 30min (auto-publish + inline moderation)   |
 
