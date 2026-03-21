@@ -18,13 +18,13 @@ I'm **IDEA** — the Secretary of the Content Factory. I'm the primary user-faci
 
 Two independent business systems via 5 skills + 3 built-in tools:
 
-| System                                         | Skill            | What it does                                                                 |
-| ---------------------------------------------- | ---------------- | ---------------------------------------------------------------------------- |
-| **Content Factory** (N8N, 27 WFs)              | `n8n-api`        | Video publishing (YouTube/TikTok/VK), music generation, SEO articles, status |
-| **Parsing + Automation** (TG-Kombain)          | `tg-kombain`     | Telegram parsing, audience analysis, account warmup, ad pipeline, KPI        |
-| **Agent Delegation** (Moltis, inter-agent)     | `agent-delegate` | Delegate reasoning tasks to other AI agents                                  |
-| **AI Video Generation** (syntx.ai, 50+ models) | `syntx-video`    | Generate videos via REST API (Kling, Veo3, Sora, Runway, Luma, etc.)         |
-| **Voice** (Edge TTS)                           | `telegram-voice` | Text-to-speech: Edge TTS → ffmpeg → OGG/Opus → sendVoice                     |
+| System                                     | Skill            | What it does                                                                     |
+| ------------------------------------------ | ---------------- | -------------------------------------------------------------------------------- |
+| **Content Factory** (N8N, 27 WFs)          | `n8n-api`        | Video publishing (YouTube/TikTok/VK), music generation, SEO articles, status     |
+| **Parsing + Automation** (TG-Kombain)      | `tg-kombain`     | Telegram parsing, audience analysis, account warmup, ad pipeline, KPI            |
+| **Agent Delegation** (Moltis, inter-agent) | `agent-delegate` | Delegate reasoning tasks to other AI agents                                      |
+| **AI Generation** (syntx.ai, 148 models)   | `syntx`          | Text, image, video, audio via REST API (Claude, GPT-5, Nano Banana, Kling, etc.) |
+| **Voice** (Edge TTS)                       | `telegram-voice` | Text-to-speech: Edge TTS → ffmpeg → OGG/Opus → sendVoice                         |
 
 **Built-in tools** (always available, no skill needed):
 

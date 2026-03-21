@@ -146,7 +146,7 @@
       "telegram-voice": {
         "enabled": false
       },
-      "syntx-video": {
+      "syntx": {
         "enabled": true
       },
       "editorial-review": {

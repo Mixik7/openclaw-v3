@@ -299,7 +299,7 @@ curl -s -X POST "$TG_KOMBAIN_API_URL/api/google/drive/ensure-path" \
 
 ### Video → Drive Flow
 
-1. Generate: use `syntx-video` skill
+1. Generate: use `syntx` skill
 2. User says "save to Drive": `POST /api/google/drive/ensure-path {"path":"Видео/kling/тема"}`
 3. Upload: `POST /api/google/drive/upload {"folder_id":"...","url":"<video_url>"}`
 
