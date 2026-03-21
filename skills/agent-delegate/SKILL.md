@@ -82,6 +82,7 @@ You (IDEA/Secretary) ──► N8N WF 26 ──► Target Agent
 - `delegate` — ask another agent to perform a reasoning task
 - `query` — ask for synthesized analysis (not raw data)
 - `notify` — send a notification (no response expected)
+- `result` — return task result (callback from target agent)
 
 ## Example: Delegate Research to Moltis
 

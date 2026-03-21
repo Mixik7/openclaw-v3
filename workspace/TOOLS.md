@@ -100,7 +100,7 @@ Cron workflows run autonomously. Cloudflare Worker `railway-monitor` pings all 5
 | ---------------- | ------------------------------- | --------------------- | ---------------------------------------------- |
 | **N8N**          | N8N, 38 WFs, 868 nodes          | 5678                  | `n8n-production-fc90.up.railway.app`           |
 | **OpenClaw v3**  | TypeScript ESM, grammy          | 18789                 | `openclaw-v3-production.up.railway.app`        |
-| **TG-Kombain**   | Python 3.12, FastAPI, ~111K LOC | 8502 (API), 8501 (UI) | `tg-kombain-production-a5d5.up.railway.app`    |
+| **TG-Kombain**   | Python 3.12, FastAPI, ~112K LOC | 8502 (API), 8501 (UI) | `tg-kombain-production-a5d5.up.railway.app`    |
 | **Moltis Atlas** | Rust v0.9.0                     | 8080                  | `moltis-production-0e5f.up.railway.app`        |
 | **Browserless**  | Chromium 145, CDP               | 3000                  | `steel-browser-production-9501.up.railway.app` |
 | **CLIProxyAPI**  | Docker                          | 8317                  | suspended                                      |
