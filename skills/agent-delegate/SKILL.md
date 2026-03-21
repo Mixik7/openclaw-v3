@@ -1,7 +1,11 @@
 ---
 name: agent-delegate
 description: Delegate tasks to other AI agents — Moltis for deep research/analysis, TG-Kombain for complex multi-step automation. Use ONLY for inter-agent delegation where another agent's reasoning is needed. Do NOT use for system commands (publish, music, status) — use n8n-api skill instead. Do NOT use for data queries — use tg-kombain skill instead. Requires N8N_BASE_URL environment variable.
-metadata: { "openclaw": { "emoji": "🤝", "requires": { "env": ["N8N_BASE_URL"] }, "primaryEnv": "N8N_BASE_URL" } }
+metadata:
+  {
+    "openclaw":
+      { "emoji": "🤝", "requires": { "env": ["N8N_BASE_URL"] }, "primaryEnv": "N8N_BASE_URL" },
+  }
 ---
 
 # Agent Delegation (Inter-Agent ONLY)
@@ -11,12 +15,14 @@ Delegate tasks to other AI agents in the Content Factory ecosystem via N8N WF 26
 ## CRITICAL: When to Use vs When NOT to Use
 
 ### USE this skill when:
+
 - User asks you to **delegate reasoning** to another agent
 - "Ask Moltis to analyze competitive landscape"
 - "Have TG-Kombain run a full parsing strategy for channel X"
 - Task requires **another agent's judgment**, not just data retrieval
 
 ### DO NOT use this skill when:
+
 - User wants to **publish content** → use `n8n-api` skill
 - User wants **data or stats** → use `tg-kombain` skill
 - User wants to **trigger a workflow** → use `n8n-api` skill
@@ -35,17 +41,18 @@ You (IDEA/Secretary) ──► N8N WF 26 ──► Target Agent
 
 ## When to Delegate to Each Agent
 
-| Agent | Delegate for... | NOT for... |
-|-------|----------------|-----------|
-| **Moltis** | Deep research, competitive analysis, complex reasoning, monitoring strategy | Simple data queries (use tg-kombain) |
-| **TG-Kombain** | Complex multi-step automation requiring planning | Single API calls (use tg-kombain) |
-| **N8N** | Complex workflow orchestration requiring judgment | Simple workflow triggers (use n8n-api) |
+| Agent          | Delegate for...                                                             | NOT for...                             |
+| -------------- | --------------------------------------------------------------------------- | -------------------------------------- |
+| **Moltis**     | Deep research, competitive analysis, complex reasoning, monitoring strategy | Simple data queries (use tg-kombain)   |
+| **TG-Kombain** | Complex multi-step automation requiring planning                            | Single API calls (use tg-kombain)      |
+| **N8N**        | Complex workflow orchestration requiring judgment                           | Simple workflow triggers (use n8n-api) |
 
 ## Delegation via N8N Webhook
 
 **Endpoint:** `POST $N8N_BASE_URL/webhook/agent-dispatch`
 
 **Body (AgentMessage):**
+
 ```json
 {
   "from_agent": "openclaw",
@@ -64,12 +71,14 @@ You (IDEA/Secretary) ──► N8N WF 26 ──► Target Agent
 ```
 
 ### Valid Agents
+
 - `openclaw` (this agent — you)
-- `moltis` (deep research, Rust sandbox, 33 MCP tools)
+- `moltis` (deep research, Rust sandbox, 79 MCP tools: 76 TG-Kombain + 3 N8N)
 - `tg-kombain` (Telegram automation platform)
 - `n8n` (workflow orchestration)
 
 ### Valid Actions
+
 - `delegate` — ask another agent to perform a reasoning task
 - `query` — ask for synthesized analysis (not raw data)
 - `notify` — send a notification (no response expected)
@@ -98,6 +107,7 @@ curl -s -X POST "$N8N_BASE_URL/webhook/agent-dispatch" \
 
 When a delegated task completes, the result arrives at your hooks endpoint:
 `POST /hooks/agent` with body:
+
 ```json
 {
   "task_id": "...",

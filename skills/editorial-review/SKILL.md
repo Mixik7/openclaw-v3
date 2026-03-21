@@ -46,13 +46,13 @@ WF 34 Content Executor (cron 30min)
 ## API Endpoints
 
 All requests go through TG-Kombain API (`TG_KOMBAIN_API_URL`).
-Auth: `Authorization: Bearer $API_SECRET_KEY` header.
+Auth: `Authorization: Bearer $TG_KOMBAIN_API_KEY` header.
 
 ### 1. List Articles (with filters)
 
 ```bash
 curl -s "$TG_KOMBAIN_API_URL/api/content/articles?status=approved&limit=20" \
-  -H "Authorization: Bearer $API_SECRET_KEY"
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY"
 ```
 
 Query params: `status` (draft|approved|publishing|published|rejected), `channelKey`, `limit`, `offset`.
@@ -61,14 +61,14 @@ Query params: `status` (draft|approved|publishing|published|rejected), `channelK
 
 ```bash
 curl -s "$TG_KOMBAIN_API_URL/api/content/articles/{article_id}" \
-  -H "Authorization: Bearer $API_SECRET_KEY"
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY"
 ```
 
 ### 3. Update Article Status
 
 ```bash
 curl -s -X PATCH "$TG_KOMBAIN_API_URL/api/content/articles/{article_id}" \
-  -H "Authorization: Bearer $API_SECRET_KEY" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"status": "approved"}'
 ```
@@ -79,7 +79,7 @@ Allowed status transitions: draft→approved, draft→rejected, approved→rejec
 
 ```bash
 curl -s -X POST "$TG_KOMBAIN_API_URL/api/content/articles/claim?channelKey=crypto_news&limit=1" \
-  -H "Authorization: Bearer $API_SECRET_KEY"
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY"
 ```
 
 Query params: `channelKey` (optional), `limit` (default 5, max 50).
@@ -89,7 +89,7 @@ Atomically transitions approved→publishing (prevents TOCTOU race conditions).
 
 ```bash
 curl -s "$TG_KOMBAIN_API_URL/api/content/memory/{channel_key}" \
-  -H "Authorization: Bearer $API_SECRET_KEY"
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY"
 ```
 
 Returns: `lastTopics`, `painPoints`, `bestPerforming`, `worstPerforming`, `updatedAt`.
@@ -98,7 +98,7 @@ Returns: `lastTopics`, `painPoints`, `bestPerforming`, `worstPerforming`, `updat
 
 ```bash
 curl -s -X POST "$TG_KOMBAIN_API_URL/api/google/sheets/read" \
-  -H "Authorization: Bearer $API_SECRET_KEY" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "spreadsheet_id": "1lFwmozG-ci94UFV_kmzVVyHKz_y4FUfCAj4p1KnBSkw",
@@ -113,7 +113,7 @@ Key fields: `channelKey`, `channelName`, `autoApproveThreshold`, `systemPrompt`,
 
 ```bash
 curl -s "$TG_KOMBAIN_API_URL/api/content/stats" \
-  -H "Authorization: Bearer $API_SECRET_KEY"
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY"
 ```
 
 Returns: articles by status, plan counts, generation costs, published_today.
@@ -122,7 +122,7 @@ Returns: articles by status, plan counts, generation costs, published_today.
 
 ```bash
 curl -s -X POST "$TG_KOMBAIN_API_URL/api/content/check-quality" \
-  -H "Authorization: Bearer $API_SECRET_KEY" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"text": "Article text here...", "channelKey": "crypto_news"}'
 ```
@@ -133,7 +133,7 @@ Returns: `passed` (bool), per-check results: `contentSafe`, `hookScore`, `aiScor
 
 ```bash
 curl -s -X POST "$TG_KOMBAIN_API_URL/api/content/humanize" \
-  -H "Authorization: Bearer $API_SECRET_KEY" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"text": "AI-sounding text...", "maxRetries": 3}'
 ```
@@ -144,7 +144,7 @@ Returns: `text` (humanized), `aiScoreBefore`, `aiScoreAfter`.
 
 ```bash
 curl -s -X POST "$TG_KOMBAIN_API_URL/api/content/record-variety" \
-  -H "Authorization: Bearer $API_SECRET_KEY" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"text": "Published text...", "channelKey": "crypto_news"}'
 ```
@@ -176,13 +176,13 @@ curl -s -X POST "$N8N_BASE_URL/api/v1/workflows/MsNRDjTffBC0hi29/execute" \
   }'
 ```
 
-### 9. Delegate Research to Moltis
+### 12. Delegate Research to Moltis
 
 When an article needs fact-checking or deeper analysis before approval:
 
 ```bash
 curl -s -X POST "$TG_KOMBAIN_API_URL/api/agent/dispatch" \
-  -H "Authorization: Bearer $API_SECRET_KEY" \
+  -H "Authorization: Bearer $TG_KOMBAIN_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "from_agent": "openclaw",

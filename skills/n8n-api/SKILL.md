@@ -83,7 +83,7 @@ curl -s "$N8N_BASE_URL/api/v1/executions/EXECUTION_ID" \
   -H "X-N8N-API-KEY: $N8N_API_KEY" | jq '{id, status, data: .data.resultData.error}'
 ```
 
-## Content Factory Workflows (31 total)
+## Content Factory Workflows (38 total)
 
 ### Core Content (WF 01-07)
 
@@ -138,11 +138,42 @@ curl -s "$N8N_BASE_URL/api/v1/executions/EXECUTION_ID" \
 | 29  | Strategy         | `FQhWmhWvpRdKbuFn` | Content strategy    |
 | 30  | Feedback Loop    | `dkn2xB9ZQtgWFYH3` | Pipeline feedback   |
 
-### Inactive
+### AI Influencer Pipeline (WF 35-40)
 
-| #      | Name           | ID                     | Reason             |
-| ------ | -------------- | ---------------------- | ------------------ |
-| ~~13~~ | ~~Jarvis Bot~~ | ~~`pvQMTF9etkC4qTxd`~~ | DELETED 2026-02-24 |
+| #   | Name              | ID                 | Trigger              | Active    |
+| --- | ----------------- | ------------------ | -------------------- | --------- |
+| 35  | Persona Manager   | `IwzKIsZhyd35PVGp` | Cron daily 09:00     | YES (S82) |
+| 36  | Photo Generator   | `H7XucfnjLu9uQ5uJ` | Cron 2h              | YES (S82) |
+| 37  | Content Publisher | `YlKX7FEny54FubRd` | Cron 2h (from 11:00) | YES       |
+| 38  | Video Generator   | `0gwbWwh1MFuwf5tj` | Cron 3h              | **NO**    |
+| 39  | Voice Generator   | `2pJFwYXDTwXUN1l2` | Cron 4h              | **NO**    |
+| 40  | Multi-Publisher   | `dIhJJhKbkGiQuIxA` | Cron 4h (from 16:00) | YES       |
+
+WF 35/36 reactivated (S82 — syntx.ai Nano Banana Pro + Claude Opus 4.6). WF 38/39 remain deactivated.
+
+### Engagement & Growth (WF 41-43)
+
+| #   | Name                 | ID                 | Trigger             |
+| --- | -------------------- | ------------------ | ------------------- |
+| 41  | Engagement Collector | `aKgi9qQFAahBE2uE` | Cron 4h             |
+| 42  | Weekly Polls         | `FR5WuOM36hPrebMR` | Cron Saturday 12:00 |
+| 43  | Cross-Promo          | `XJqS5HWrr1le62BO` | Cron 8h             |
+
+WF 41: collects views/reactions via Telethon, feeds ERR data back to WF 33.
+WF 42: AI-generated polls (Perplexity Sonar) to 9 channels every Saturday.
+WF 43: 2-3 random cross-links from 9x9 channel matrix every 8h.
+
+### Inactive (5 WFs)
+
+| #   | Name                 | ID                 | Reason                      |
+| --- | -------------------- | ------------------ | --------------------------- |
+| 08  | TikTok Token Refresh | `4xfXnDMiRCKfuduR` | Late.dev manages tokens     |
+| 15  | TG-Kombain Control   | `fTw1h8nqG5nA4Fd3` | Replaced by Dashboard + MCP |
+| 22  | Engagement Booster   | `FhFNghBmFAvQ2dNL` | Dead endpoint               |
+| 38  | Video Generator      | `0gwbWwh1MFuwf5tj` | S67 — manual Murphy         |
+| 39  | Voice Generator      | `2pJFwYXDTwXUN1l2` | S67 — manual Murphy         |
+
+WF 13 (Jarvis Bot, `pvQMTF9etkC4qTxd`) — DELETED 2026-02-24.
 
 ## Tips
 
@@ -155,3 +186,7 @@ curl -s "$N8N_BASE_URL/api/v1/executions/EXECUTION_ID" \
 - Use `editorial-review` skill for article moderation, not this skill
 - WF 19-25 are TG-Kombain automation crons — they run autonomously
 - WF 26-30 are agent ecosystem support — don't trigger manually unless debugging
+- WF 35→36→37→40 is the AI Influencer pipeline: persona planning → photo generation → publish → cross-post
+- WF 35/36 use syntx.ai Nano Banana Pro + Claude Opus 4.6 (S82)
+- WF 41-43 are autonomous cron jobs — engagement collection, weekly polls, cross-promo
+- WF 41 (Engagement Collector) feeds ERR data to WF 33 (Channel Analysts) for content optimization

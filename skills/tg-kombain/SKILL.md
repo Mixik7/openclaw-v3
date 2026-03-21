@@ -1,6 +1,6 @@
 ---
 name: tg-kombain
-description: Access TG-Kombain Telegram automation platform — parse channels, manage accounts, check stats, audience insights, warmup status, ad pipeline, and more. Use when the user asks about Telegram data, audience, channel metrics, account management, or wants to trigger parsing/automation tasks. Requires TG_KOMBAIN_API_KEY and TG_KOMBAIN_API_URL environment variables.
+description: Access TG-Kombain Telegram automation platform — parse channels, manage accounts, check stats, audience insights, warmup status, ad pipeline, content pipeline, engagement metrics, AI memory, syntx.ai proxy, and more. Use when the user asks about Telegram data, audience, channel metrics, account management, content operations, engagement, or wants to trigger parsing/automation tasks. Requires TG_KOMBAIN_API_KEY and TG_KOMBAIN_API_URL environment variables.
 metadata:
   {
     "openclaw":
@@ -14,7 +14,7 @@ metadata:
 
 # TG-Kombain Integration
 
-Access the TG-Kombain Telegram automation platform (55K LOC, 9 modules, 100+ API endpoints).
+Access the TG-Kombain Telegram automation platform (~112K LOC, 16 MCP modules, 76 tools, 291 endpoints, 33 routers).
 
 ## Auth
 
@@ -81,6 +81,92 @@ Modes: `channel_members`, `channel_posts`, `search_channels`, `search_users`
 | Scoring results | `/api/ad-pipeline/scoring`    | GET    |
 | Deals           | `/api/ad-pipeline/deals`      | GET    |
 
+### Content Pipeline (SQLite API)
+
+| Action              | Endpoint                            | Method   |
+| ------------------- | ----------------------------------- | -------- |
+| List articles       | `/api/content/articles`             | GET      |
+| Create article      | `/api/content/articles`             | POST     |
+| Batch create        | `/api/content/articles/batch`       | POST     |
+| Get article         | `/api/content/articles/{id}`        | GET      |
+| Update article      | `/api/content/articles/{id}`        | PATCH    |
+| Claim for publish   | `/api/content/articles/claim`       | POST     |
+| Dedup check         | `/api/content/articles/dedup`       | GET      |
+| Archive old         | `/api/content/articles/archive`     | POST     |
+| Recover stuck       | `/api/content/articles/recover`     | POST     |
+| List/create plans   | `/api/content/plans`                | GET/POST |
+| Update plan         | `/api/content/plans/{id}`           | PATCH    |
+| Pipeline stats      | `/api/content/stats`                | GET      |
+| SEO publish log     | `/api/content/seo-log`              | GET/POST |
+| Persona publish log | `/api/content/persona-log`          | GET/POST |
+| Generation log      | `/api/content/generation-log`       | GET/POST |
+| Channel memory      | `/api/content/memory/{channel_key}` | GET/POST |
+
+Query params for articles: `status` (draft|approved|publishing|published|rejected), `channelKey`, `limit`, `offset`.
+
+### Quality Gate
+
+| Action                | Endpoint                      | Method |
+| --------------------- | ----------------------------- | ------ |
+| 5-point quality check | `/api/content/check-quality`  | POST   |
+| Humanize AI text      | `/api/content/humanize`       | POST   |
+| Record format variety | `/api/content/record-variety` | POST   |
+
+### Engagement
+
+| Action                    | Endpoint                          | Method |
+| ------------------------- | --------------------------------- | ------ |
+| Collect (Telethon, WF 41) | `/api/content/collect-engagement` | POST   |
+| Write post metrics        | `/api/content/engagement`         | POST   |
+| ERR stats per channel     | `/api/content/engagement/stats`   | GET    |
+| Top/bottom posts by ERR   | `/api/content/engagement/top`     | GET    |
+
+### syntx.ai Proxy
+
+| Action                 | Endpoint                    | Method |
+| ---------------------- | --------------------------- | ------ |
+| Generate text          | `/api/n8n/syntx-text`       | POST   |
+| Generate image         | `/api/n8n/syntx-image`      | POST   |
+| JWT status             | `/api/n8n/syntx-jwt-status` | GET    |
+| Circuit breaker status | `/api/n8n/syntx-cb-status`  | GET    |
+| Circuit breaker reset  | `/api/n8n/syntx-cb-reset`   | POST   |
+
+Text model aliases: claude-opus, claude-sonnet, claude-haiku, sonar, sonar-pro, sonar-deep, gpt-5, gpt-4.1.
+
+### Engram Memory (AI Persistence)
+
+| Action           | Endpoint                  | Method |
+| ---------------- | ------------------------- | ------ |
+| Store memory     | `/api/memory/store`       | POST   |
+| Search memories  | `/api/memory/search`      | GET    |
+| Recall by ID     | `/api/memory/recall`      | GET    |
+| Evolve memory    | `/api/memory/evolve`      | POST   |
+| Forget memory    | `/api/memory/forget`      | POST   |
+| Consolidate      | `/api/memory/consolidate` | POST   |
+| Decay old        | `/api/memory/decay`       | POST   |
+| Stats            | `/api/memory/stats`       | GET    |
+| Generate context | `/api/memory/context`     | GET    |
+
+Based on A-MEM (NeurIPS 2025). FTS5 BM25 search, Ebbinghaus forgetting curve, bigram Jaccard dedup.
+
+### Persona Pipeline
+
+| Action          | Endpoint                           | Method |
+| --------------- | ---------------------------------- | ------ |
+| Train LoRA      | `/api/n8n/persona/train-lora`      | POST   |
+| Training status | `/api/n8n/persona/training-status` | GET    |
+| Generate batch  | `/api/n8n/persona/generate-batch`  | POST   |
+| Face validate   | `/api/n8n/persona/face-validate`   | POST   |
+
+### RSS Feeds
+
+| Action      | Endpoint              | Method |
+| ----------- | --------------------- | ------ |
+| List feeds  | `/api/rss-feeds`      | GET    |
+| Add feed    | `/api/rss-feeds`      | POST   |
+| Update feed | `/api/rss-feeds/{id}` | PATCH  |
+| Delete feed | `/api/rss-feeds/{id}` | DELETE |
+
 ### Agent Bridge (Symbiosis)
 
 | Action        | Endpoint                | Method |
@@ -109,20 +195,27 @@ Modes: `channel_members`, `channel_posts`, `search_channels`, `search_users`
 | MCP status | `/api/mcp-status` | GET    |
 | MCP proxy  | `/api/mcp-proxy`  | POST   |
 
-## Available Modules
+## MCP Modules (76 tools, 16 modules)
 
-| Module      | Purpose                          |
-| ----------- | -------------------------------- |
-| parser      | Channel/user parsing, search     |
-| warmup      | Account warmup automation        |
-| trust       | Trust score tracking             |
-| neurochat   | AI chatting in groups            |
-| poster      | Scheduled posting                |
-| ad_pipeline | Ad buying pipeline (7 stages)    |
-| rss         | RSS feed aggregation             |
-| viral       | Viral campaigns (giveaway, quiz) |
-| mutual_pr   | Cross-promotion finder           |
-| strategy    | AI strategy advisor              |
+| Module           | Tools | Purpose                                          |
+| ---------------- | ----- | ------------------------------------------------ |
+| system           | 4     | Health, stats, task management                   |
+| parsing          | 7     | Channel/user parsing, search, audience           |
+| content          | 5     | Post to channel, scheduled posts, strategy       |
+| engagement       | 4     | Reactions, AI comments, invites, DMs             |
+| analytics        | 6     | KPI, quality, ad pipeline stats                  |
+| accounts         | 4     | Account listing, trust scores, warmup            |
+| automation       | 5     | Mutual PR, viral campaigns                       |
+| syntx            | 2     | syntx.ai generate + balance                      |
+| google_workspace | 9     | Sheets CRUD, Drive operations                    |
+| image_gen        | 2     | Image generation, model listing                  |
+| fal              | 8     | fal.ai: generate, edit, video, lipsync, etc.     |
+| persona          | 4     | LoRA training, batch generation, face validation |
+| comfyui          | 6     | ComfyUI on RunPod: generate, portrait, skin      |
+| tglite           | 2     | Read channel messages, list dialogs              |
+| memory           | 8     | Engram: store, search, recall, evolve, etc.      |
+
+MCP endpoint: `POST /mcp/` (trailing slash required). Auth: `Bearer MCP_ACCESS_TOKEN`.
 
 ### Image Generation (Phase 8.1)
 
